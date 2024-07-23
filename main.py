@@ -1,4 +1,6 @@
 GRASS_MIN = 2000
+TARGET_WATER_LEVEL = 0.8
+TANK_CAPACITY = 0.25
 
 # Define dependencies and conditions using lists of tuples
 dependencies = [
@@ -107,12 +109,16 @@ def prepare_ground_for_planting():
         water_soil()
 
 def water_soil():
-    have_water = True
-    while have_water and get_water() < 0.5:
-        if num_items(Items.Water_Tank) > 0:
-            use_item(Items.Water_Tank)
-        else:
-            have_water = False
+    water_level = get_water()
+    if water_level < TARGET_WATER_LEVEL:
+        needed_water = TARGET_WATER_LEVEL - water_level
+        tanks_needed = (needed_water / TANK_CAPACITY) + 1  # Calculate tanks needed
+
+        for i in range(tanks_needed):  # Use tanks_needed as the loop limit
+            if num_items(Items.Water_Tank) > 0:
+                use_item(Items.Water_Tank)
+            else:
+                break
             
     if num_items(Items.Empty_Tank) + num_items(Items.Water_Tank) < 100:
         trade(Items.Empty_Tank)
