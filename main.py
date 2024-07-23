@@ -3,10 +3,16 @@ TARGET_WATER_LEVEL = 0.5  # Adjusted to be more conservative
 TANK_CAPACITY = 0.25
 MIN_WATER_LEVEL = 0.2  # Water if below this level
 
-# Dependencies
+# Dependencies and priorities
 dependencies = [
     (Items.Carrot_Seed, [(Items.Wood, 2), (Items.Hay, 2)]),
     (Items.Pumpkin_Seed, [(Items.Carrot, 1)])
+]
+
+priorities = [
+    (Items.Hay, 12000),
+    (Items.Carrot, 3000),
+    (Items.Pumpkin, 6200)
 ]
 
 # Main management loop
@@ -27,12 +33,19 @@ def manage_farm():
 
 # Planting functions
 def do_planting():
+    # Check priorities first
+    for priority in priorities:
+        item, target = priority
+        if num_items(item) < target:
+            plant_based_on_priority(item)
+            return
+
+    # If no priorities, determine the most deficient item
     wood_count = num_items(Items.Wood)
     hay_count = num_items(Items.Hay)
     carrot_count = num_items(Items.Carrot)
     pumpkin_count = num_items(Items.Pumpkin)
 
-    # Find the most deficient item
     min_count = min(wood_count, hay_count, carrot_count, pumpkin_count)
     if min_count == wood_count:
         plant_bush()
@@ -41,6 +54,16 @@ def do_planting():
     elif min_count == carrot_count:
         plant_carrot()
     elif min_count == pumpkin_count:
+        plant_pumpkin()
+
+def plant_based_on_priority(item):
+    if item == Items.Wood:
+        plant_bush()
+    elif item == Items.Hay:
+        plant_grass()
+    elif item == Items.Carrot:
+        plant_carrot()
+    elif item == Items.Pumpkin:
         plant_pumpkin()
 
 def plant_pumpkin():
