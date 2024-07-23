@@ -27,7 +27,7 @@ def do_planting(grass_min):
             plant_carrot()
         elif w < h:
             plant_bush()
-            
+
 def something_growing():
     entity = get_entity_type()
     if entity == Entities.Bush or entity == Entities.Carrots or entity == Entities.Grass or entity == Entities.Pumpkin:
@@ -40,7 +40,7 @@ def plant_pumpkin():
             plant_carrot()
         trade(Items.Pumpkin_Seed)
 
-    prepare_ground()
+    prepare_ground_for_planting()
     plant(Entities.Pumpkin)
 
 def plant_carrot():
@@ -51,17 +51,17 @@ def plant_carrot():
             plant_grass()
         trade(Items.Carrot_Seed)
     
-    prepare_ground()
+    prepare_ground_for_planting()
     plant(Entities.Carrots)
 
 def have_enough_wood():
-    return num_items(Items.Wood) > 2
+    return num_items(Items.Wood) >= 2
 
 def have_enough_hay():
-    return num_items(Items.Hay) > 2
+    return num_items(Items.Hay) >= 2
 
 def have_enough_carrots():
-    return num_items(Items.Carrot) > 2
+    return num_items(Items.Carrot) >= 1
 
 def plant_bush():
     prepare_ground()
@@ -70,8 +70,8 @@ def plant_bush():
 def plant_grass():
     prepare_ground()
     plant(Entities.Grass)
-    
-def prepare_ground():
+
+def prepare_ground_for_planting():
     ground_type = get_ground_type()
     if ground_type == Grounds.Turf:
         till()
@@ -88,3 +88,9 @@ def water_soil():
             
     if num_items(Items.Empty_Tank) + num_items(Items.Water_Tank) < 100:
         trade(Items.Empty_Tank)
+
+def prepare_ground():
+    ground_type = get_ground_type()
+    if ground_type == Grounds.Turf:
+        till()
+    # No need to water soil for bushes or grass
