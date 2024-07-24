@@ -6,14 +6,16 @@ MIN_WATER_LEVEL = 0.2  # Water if below this level
 # Dependencies and priorities
 dependencies = [
     (Items.Carrot_Seed, [(Items.Wood, 2), (Items.Hay, 2)]),
-    (Items.Pumpkin_Seed, [(Items.Carrot, 1)])
+    (Items.Pumpkin_Seed, [(Items.Carrot, 1)]),
+    (Items.Sunflower_Seed, [(Items.Carrot, 1)]) 
 ]
 
 priorities = [
     (Items.Hay, 5000),
     (Items.Carrot, 5000),
-    (Items.Pumpkin, 22000),
-    (Items.Wood, 5000)
+    (Items.Pumpkin, 80000),
+    (Items.Wood, 5000),
+    (Items.Power, 100)
 ]
 
 # Main management loop
@@ -24,13 +26,22 @@ def manage_farm():
             for j in range(world_size):
                 # Check if current position can be harvested
                 if can_harvest():
-                    harvest()
-                    do_planting()
+                    handle_harvest()
                 else:
                     if not something_growing():
                         do_planting()
                 move(North)
             move(East)
+
+# Harvesting functions
+def handle_harvest():
+    if get_entity_type() == Entities.Sunflower:
+        petals = measure()
+        if petals == 15:
+            harvest()
+    else:
+        harvest()
+    do_planting()
 
 # Planting functions
 def do_planting():
@@ -46,8 +57,9 @@ def do_planting():
     hay_count = num_items(Items.Hay)
     carrot_count = num_items(Items.Carrot)
     pumpkin_count = num_items(Items.Pumpkin)
+    power_count = num_items(Items.Power)
 
-    min_count = min(wood_count, hay_count, carrot_count, pumpkin_count)
+    min_count = min(wood_count, hay_count, carrot_count, pumpkin_count, power_count)
     if min_count == wood_count:
         plant_tree_or_bush()
     elif min_count == hay_count:
@@ -56,6 +68,8 @@ def do_planting():
         plant_carrot()
     elif min_count == pumpkin_count:
         plant_pumpkin()
+    elif min_count == power_count:
+        plant_sunflower()
 
 def plant_based_on_priority(item):
     if item == Items.Wood:
@@ -66,6 +80,8 @@ def plant_based_on_priority(item):
         plant_carrot()
     elif item == Items.Pumpkin:
         plant_pumpkin()
+    elif item == Items.Power:
+        plant_sunflower()
 
 def plant_tree_or_bush():
     if can_plant_tree():
@@ -100,6 +116,13 @@ def plant_tree():
     prepare_ground()
     plant(Entities.Tree)
 
+def plant_sunflower():
+    if num_items(Items.Sunflower_Seed) == 0:
+        ensure_resources_for(Items.Sunflower_Seed)
+        trade(Items.Sunflower_Seed)
+    prepare_ground_for_planting()
+    plant(Entities.Sunflower)
+
 def plant_pumpkin():
     if num_items(Items.Pumpkin_Seed) == 0:
         ensure_resources_for(Items.Pumpkin_Seed)
@@ -125,7 +148,7 @@ def plant_grass():
 # Helper functions
 def something_growing():
     entity = get_entity_type()
-    return entity in [Entities.Bush, Entities.Carrots, Entities.Grass, Entities.Pumpkin, Entities.Tree]
+    return entity in [Entities.Bush, Entities.Carrots, Entities.Grass, Entities.Pumpkin, Entities.Tree, Entities.Sunflower]
 
 def have_enough(item, amount):
     return num_items(item) >= amount
@@ -146,6 +169,8 @@ def plant_based_on_resource(item):
         plant_grass()
     elif item == Items.Carrot:
         plant_carrot()
+    elif item == Items.Power:
+        plant_sunflower()
 
 def prepare_ground_for_planting():
     ground_type = get_ground_type()
