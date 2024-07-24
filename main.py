@@ -74,11 +74,27 @@ def plant_tree_or_bush():
         plant_bush()
 
 def can_plant_tree():
-    # Check if there are no trees adjacent
-    return (get_entity_type(North) != Entities.Tree and
-            get_entity_type(South) != Entities.Tree and
-            get_entity_type(East) != Entities.Tree and
-            get_entity_type(West) != Entities.Tree)
+    original_position = (get_pos_x(), get_pos_y())
+    
+    directions = [North, South, East, West]
+    for direction in directions:
+        move(direction)
+        if get_entity_type() == Entities.Tree:
+            move_back(original_position)
+            return False
+        move_back(original_position)
+    return True
+
+def move_back(original_position):
+    current_position = (get_pos_x(), get_pos_y())
+    if current_position[0] < original_position[0]:
+        move(East)
+    elif current_position[0] > original_position[0]:
+        move(West)
+    if current_position[1] < original_position[1]:
+        move(North)
+    elif current_position[1] > original_position[1]:
+        move(South)
 
 def plant_tree():
     prepare_ground()
