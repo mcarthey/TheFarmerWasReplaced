@@ -10,9 +10,10 @@ dependencies = [
 ]
 
 priorities = [
-    (Items.Hay, 12000),
-    (Items.Carrot, 3000),
-    (Items.Pumpkin, 6200)
+    (Items.Hay, 5000),
+    (Items.Carrot, 5000),
+    (Items.Pumpkin, 22000),
+    (Items.Wood, 5000)
 ]
 
 # Main management loop
@@ -48,7 +49,7 @@ def do_planting():
 
     min_count = min(wood_count, hay_count, carrot_count, pumpkin_count)
     if min_count == wood_count:
-        plant_bush()
+        plant_tree_or_bush()
     elif min_count == hay_count:
         plant_grass()
     elif min_count == carrot_count:
@@ -58,13 +59,30 @@ def do_planting():
 
 def plant_based_on_priority(item):
     if item == Items.Wood:
-        plant_bush()
+        plant_tree_or_bush()
     elif item == Items.Hay:
         plant_grass()
     elif item == Items.Carrot:
         plant_carrot()
     elif item == Items.Pumpkin:
         plant_pumpkin()
+
+def plant_tree_or_bush():
+    if can_plant_tree():
+        plant_tree()
+    else:
+        plant_bush()
+
+def can_plant_tree():
+    # Check if there are no trees adjacent
+    return (get_entity_type(North) != Entities.Tree and
+            get_entity_type(South) != Entities.Tree and
+            get_entity_type(East) != Entities.Tree and
+            get_entity_type(West) != Entities.Tree)
+
+def plant_tree():
+    prepare_ground()
+    plant(Entities.Tree)
 
 def plant_pumpkin():
     if num_items(Items.Pumpkin_Seed) == 0:
@@ -91,7 +109,7 @@ def plant_grass():
 # Helper functions
 def something_growing():
     entity = get_entity_type()
-    return entity in [Entities.Bush, Entities.Carrots, Entities.Grass, Entities.Pumpkin]
+    return entity in [Entities.Bush, Entities.Carrots, Entities.Grass, Entities.Pumpkin, Entities.Tree]
 
 def have_enough(item, amount):
     return num_items(item) >= amount
@@ -107,7 +125,7 @@ def ensure_resources_for(seed):
 
 def plant_based_on_resource(item):
     if item == Items.Wood:
-        plant_bush()
+        plant_tree_or_bush()
     elif item == Items.Hay:
         plant_grass()
     elif item == Items.Carrot:
