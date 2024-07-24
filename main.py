@@ -5,8 +5,8 @@ MIN_WATER_LEVEL = 0.2  # Water if below this level
 
 # Dependencies and priorities
 dependencies = [
-    (Items.Carrot_Seed, [(Items.Wood, 2), (Items.Hay, 2)]),
-    (Items.Pumpkin_Seed, [(Items.Carrot, 1)]),
+    (Items.Carrot_Seed, [(Items.Wood, 7), (Items.Hay, 7)]),
+    (Items.Pumpkin_Seed, [(Items.Carrot, 3)]),
     (Items.Sunflower_Seed, [(Items.Carrot, 1)]) 
 ]
 
