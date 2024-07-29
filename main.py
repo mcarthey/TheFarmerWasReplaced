@@ -1,8 +1,3 @@
-# Constants
-TARGET_WATER_LEVEL = 0.5  # Adjusted to be more conservative
-TANK_CAPACITY = 0.25
-MIN_WATER_LEVEL = 0.2  # Water if below this level
-
 # Dependencies and priorities
 dependencies = [
     (Items.Carrot_Seed, [(Items.Wood, 7), (Items.Hay, 7)]),
@@ -173,23 +168,6 @@ def prepare_ground():
     if ground_type == Grounds.Turf:
         till()
     # No need to water soil for bushes or grass
-
-def water_soil():
-    water_level = get_water()
-    if water_level < MIN_WATER_LEVEL:
-        needed_water = TARGET_WATER_LEVEL - water_level
-        tanks_needed = needed_water / TANK_CAPACITY
-        # Use tanks only up to a certain limit to conserve resources
-        max_tanks_to_use = 5  # Adjust as necessary to balance water usage
-        tanks_used = 0
-        while tanks_used < tanks_needed and tanks_used < max_tanks_to_use:
-            if num_items(Items.Water_Tank) > 0:
-                use_item(Items.Water_Tank)
-                tanks_used += 1
-            else:
-                break
-    if num_items(Items.Empty_Tank) + num_items(Items.Water_Tank) < 100:
-        trade(Items.Empty_Tank)
 
 # Start managing the farm
 manage_farm()

@@ -3,7 +3,6 @@ from utils import move_to, move_back_direction
 def navigate_maze():
     world_size = get_world_size()
     visited = []
-
     directions = [
         (North, 0, 1),
         (South, 0, -1),
@@ -16,14 +15,9 @@ def navigate_maze():
             return False
         visited.append((x, y))
 
-        while get_entity_type() == Entities.Treasure:
-            if num_items(Items.Fertilizer) == 0:
-                trade(Items.Fertilizer)
-            use_item(Items.Fertilizer)
-
-            if get_entity_type() != Entities.Treasure:
-                quick_print("Regenerated!")
-                return True
+        if get_entity_type() == Entities.Treasure:
+            quick_print("Found Treasure!")
+            return True
 
         for direction in directions:
             dir, dx, dy = direction
@@ -33,29 +27,40 @@ def navigate_maze():
                 if move_to(next_x, next_y):  # Check if move_to was successful
                     if dfs(next_x, next_y):
                         return True
-                    move_back_direction(dir)
-
+                    move_back_direction(dir)  # Only backtrack if the move was successful
+        
         return False
 
-    def find_treasure():
-        for i in range(world_size):
-            for j in range(world_size):
-                if (i, j) not in visited:
-                    move_to(i, j)
+    def find_treasure(initial_x, initial_y):
+        for direction in directions:
+            dir, dx, dy = direction
+            next_x, next_y = initial_x + dx, initial_y + dy
+            if (next_x, next_y) not in visited:
+                if move_to(next_x, next_y):
                     if get_entity_type() == Entities.Hedge:
-                        if dfs(i, j):
+                        if dfs(next_x, next_y):
                             return True
+                    move_to(initial_x, initial_y)  # Return to the starting location if path is not successful
         return False
 
     # Start the process
-    if find_treasure():
+    initial_pos_x, initial_pos_y = get_pos_x(), get_pos_y()
+    if find_treasure(initial_pos_x, initial_pos_y):
         quick_print("Treasure found in the maze!")
     else:
         quick_print("No treasure found in the maze.")
 
 # Call navigate_maze to start the process
-SOLVED_COUNT = 10
+SOLVED_COUNT = 100
 for s in range(SOLVED_COUNT):
     navigate_maze()
     quick_print("Maze solved:", s + 1, "times")
+
+    if s < SOLVED_COUNT - 1:
+        while get_entity_type() == Entities.Treasure:
+            if num_items(Items.Fertilizer) == 0:
+                trade(Items.Fertilizer)
+            use_item(Items.Fertilizer)
+
+# Harvest after all iterations have completed
 harvest()
