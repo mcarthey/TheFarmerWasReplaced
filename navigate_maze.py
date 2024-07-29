@@ -1,57 +1,61 @@
+from utils import move_to, move_back_direction
+
 def navigate_maze():
     world_size = get_world_size()
-    m_visited = []
+    visited = []
 
-    def m_dfs(x, y):
-        if (x, y) in m_visited:
+    directions = [
+        (North, 0, 1),
+        (South, 0, -1),
+        (East, 1, 0),
+        (West, -1, 0)
+    ]
+
+    def dfs(x, y):
+        if (x, y) in visited:
             return False
-        m_visited.append((x, y))
+        visited.append((x, y))
 
-        if get_entity_type() == Entities.Treasure:
-            quick_print("Treasure found!")
-            harvest()
-            return True
+        while get_entity_type() == Entities.Treasure:
+            if num_items(Items.Fertilizer) == 0:
+                trade(Items.Fertilizer)
+            use_item(Items.Fertilizer)
 
-        # Try moving in all directions
-        directions = [North, South, East, West]
-        for d in range(4):
-            if move(directions[d]):
-                next_x, next_y = get_pos_x(), get_pos_y()
-                if m_dfs(next_x, next_y):
-                    return True
-                m_move_back(directions[d])
-        
+            if get_entity_type() != Entities.Treasure:
+                quick_print("Regenerated!")
+                return True
+
+        for direction in directions:
+            dir, dx, dy = direction
+            next_x, next_y = x + dx, y + dy
+
+            if (next_x, next_y) not in visited:
+                if move_to(next_x, next_y):  # Check if move_to was successful
+                    if dfs(next_x, next_y):
+                        return True
+                    move_back_direction(dir)
+
         return False
 
-    def m_move_back(direction):
-        if direction == North:
-            move(South)
-        elif direction == South:
-            move(North)
-        elif direction == East:
-            move(West)
-        elif direction == West:
-            move(East)
+    def find_treasure():
+        for i in range(world_size):
+            for j in range(world_size):
+                if (i, j) not in visited:
+                    move_to(i, j)
+                    if get_entity_type() == Entities.Hedge:
+                        if dfs(i, j):
+                            return True
+        return False
 
-    def m_move_to(x, y):
-        while get_pos_x() != x:
-            if get_pos_x() < x:
-                move(East)
-            else:
-                move(West)
-        while get_pos_y() != y:
-            if get_pos_y() < y:
-                move(North)
-            else:
-                move(South)
+    # Start the process
+    if find_treasure():
+        quick_print("Treasure found in the maze!")
+    else:
+        quick_print("No treasure found in the maze.")
 
-    # Start DFS from each tile to find the treasure
-    for i in range(world_size):
-        for j in range(world_size):
-            m_move_to(i, j)
-            if get_entity_type() == Entities.Hedge:
-                if m_dfs(i, j):
-                    return
-
-# Call navigate_maze after maze is generated
-navigate_maze()
+# Call navigate_maze to start the process
+SOLVED_COUNT = 10
+for s in range(SOLVED_COUNT):
+    navigate_maze()
+    quick_print("Maze solved:", s + 1, "times")
+harvest()

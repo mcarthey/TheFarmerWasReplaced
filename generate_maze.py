@@ -6,18 +6,6 @@ def plant_bushes_across_grid():
             if get_entity_type() != Entities.Bush:
                 plant(Entities.Bush)
 
-def move_to(x, y):
-    while get_pos_x() != x:
-        if get_pos_x() < x:
-            move(East)
-        else:
-            move(West)
-    while get_pos_y() != y:
-        if get_pos_y() < y:
-            move(North)
-        else:
-            move(South)
-
 def apply_fertilizer_to_bushes():
     world_size = get_world_size()
     for i in range(world_size):

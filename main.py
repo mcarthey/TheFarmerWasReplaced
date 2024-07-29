@@ -11,10 +11,10 @@ dependencies = [
 ]
 
 priorities = [
-    (Items.Hay, 5000),
-    (Items.Carrot, 5000),
-    (Items.Pumpkin, 80000),
-    (Items.Wood, 5000),
+    (Items.Hay, 6000),
+    (Items.Carrot, 6000),
+    (Items.Pumpkin, 6000),
+    (Items.Wood, 6000),
     (Items.Power, 100)
 ]
 
@@ -96,21 +96,10 @@ def can_plant_tree():
     for direction in directions:
         move(direction)
         if get_entity_type() == Entities.Tree:
-            move_back(original_position)
+            move_back_position(original_position)
             return False
-        move_back(original_position)
+        move_back_position(original_position)
     return True
-
-def move_back(original_position):
-    current_position = (get_pos_x(), get_pos_y())
-    if current_position[0] < original_position[0]:
-        move(East)
-    elif current_position[0] > original_position[0]:
-        move(West)
-    if current_position[1] < original_position[1]:
-        move(North)
-    elif current_position[1] > original_position[1]:
-        move(South)
 
 def plant_tree():
     prepare_ground()
