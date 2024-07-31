@@ -27,7 +27,7 @@ def manage_farm():
                     handle_harvest()
                 else:
                     if not something_growing():
-                        do_planting()
+                        do_planting((i,j))
                 move(North)
             move(East)
 
@@ -45,7 +45,7 @@ def handle_harvest():
             harvest_all_sunflowers_with_max_petals(max_petals)
     else:
         harvest()
-    do_planting()
+    do_planting(pos)
 
 def all_petals_known():
     for pos_key in sunflower_positions:
@@ -70,9 +70,13 @@ def harvest_all_sunflowers_with_max_petals(max_petals):
     # Remove harvested sunflowers from the dictionary
     for key in keys_to_remove:
         sunflower_positions.pop(key)
+        do_planting(key) # Plant something new in the harvested position
 
 # Planting functions
-def do_planting():
+def do_planting(position):
+    # Move to the specified position
+    move_to(position[0], position[1])
+
     # Check priorities first
     for priority in priorities:
         item, target = priority
