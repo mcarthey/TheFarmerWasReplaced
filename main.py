@@ -13,6 +13,9 @@ priorities = [
     (Items.Power, 100)
 ]
 
+# Track sunflower positions and petals
+sunflower_positions = {}
+
 # Main management loop
 def manage_farm():
     world_size = get_world_size()
@@ -30,13 +33,43 @@ def manage_farm():
 
 # Harvesting functions
 def handle_harvest():
+    pos = (get_pos_x(), get_pos_y())
     if get_entity_type() == Entities.Sunflower:
         petals = measure()
-        if petals == 15:
-            harvest()
+        sunflower_positions[pos] = petals
+        if all_petals_known():
+            max_petals = 0
+            for pos_key in sunflower_positions:
+                if sunflower_positions[pos_key] > max_petals:
+                    max_petals = sunflower_positions[pos_key]
+            harvest_all_sunflowers_with_max_petals(max_petals)
     else:
         harvest()
     do_planting()
+
+def all_petals_known():
+    for pos_key in sunflower_positions:
+        if sunflower_positions[pos_key] == None:
+            return False
+    return True
+
+def harvest_all_sunflowers_with_max_petals(max_petals):
+    keys_to_remove = []
+    for pos_key in list(sunflower_positions):
+        if sunflower_positions[pos_key] == max_petals:
+            move_to(pos_key[0], pos_key[1])
+            if get_entity_type() == Entities.Sunflower:
+                sunflower_positions[pos_key] = measure() # Update the petals count 
+                if sunflower_positions[pos_key] == max_petals:           
+                    quick_print("Harvesting sunflower with")
+                    quick_print(max_petals)
+                    quick_print("petals.")
+                    harvest()
+                    keys_to_remove.append(pos_key)
+
+    # Remove harvested sunflowers from the dictionary
+    for key in keys_to_remove:
+        sunflower_positions.pop(key)
 
 # Planting functions
 def do_planting():
@@ -106,6 +139,12 @@ def plant_sunflower():
         trade(Items.Sunflower_Seed)
     prepare_ground_for_planting()
     plant(Entities.Sunflower)
+    update_sunflower_positions()  # Track the sunflower position
+
+def update_sunflower_positions():
+    pos = (get_pos_x(), get_pos_y())
+    petals = measure()
+    sunflower_positions[pos] = petals
 
 def plant_pumpkin():
     if num_items(Items.Pumpkin_Seed) == 0:
