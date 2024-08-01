@@ -11,7 +11,7 @@ priorities = [
     (Items.Carrot, 6000),
     (Items.Pumpkin, 6000),
     (Items.Wood, 6000),
-    (Items.Cactus, 6000),
+#    (Items.Cactus, 6000),
     (Items.Power, 100)
 ]
 
@@ -39,24 +39,37 @@ def manage_farm():
 # Harvesting functions
 def handle_harvest():
     pos = (get_pos_x(), get_pos_y())
+
+    # Plant companion plants before harvesting 
+    handle_companion_planting(pos)
+
     if get_entity_type() == Entities.Sunflower:
         petals = measure()
         sunflower_positions[pos] = petals
         if all_petals_known():
-            max_petals = 0
-            for pos_key in sunflower_positions:
-                if sunflower_positions[pos_key] > max_petals:
-                    max_petals = sunflower_positions[pos_key]
+            max_petals = get_max_petals()
             harvest_all_sunflowers_with_max_petals(max_petals)
-    elif get_entity_type() == Entities.Cactus:
-        sort_cacti()
-        if check_sorted_cacti():
-            harvest_all_cacti()
+    # elif get_entity_type() == Entities.Cactus:
+    #     sort_cacti()
+    #     if check_sorted_cacti():
+    #         harvest_all_cacti()
     else:
         harvest()
 
     # plant something new in the harvested position   
     do_planting(pos)
+
+def get_max_petals():
+    # Initialize a variable to keep track of the maximum petals
+    max_petals = 0
+    
+    # Iterate over the dictionary to find the maximum petals
+    for pos in sunflower_positions:
+        petals = sunflower_positions[pos]
+        if petals > max_petals:
+            max_petals = petals
+    
+    return max_petals
 
 def all_petals_known():
     for pos_key in sunflower_positions:
@@ -72,9 +85,7 @@ def harvest_all_sunflowers_with_max_petals(max_petals):
             if get_entity_type() == Entities.Sunflower:
                 sunflower_positions[pos_key] = measure() # Update the petals count 
                 if sunflower_positions[pos_key] == max_petals:           
-                    quick_print("Harvesting sunflower with")
-                    quick_print(max_petals)
-                    quick_print("petals.")
+                    #quick_print("Harvesting sunflower with ", max_petals, " petals at ", pos_key[0], ",", pos_key[1])
                     harvest()
                     keys_to_remove.append(pos_key)
 
@@ -105,7 +116,30 @@ def check_sorted_cacti():
                 x - 1 >= 0 and measure_at(x - 1, y) > current_size):
                 return False
     return True
-  
+
+def handle_companion_planting(position):
+
+    # Get companion information for the plant under the drone
+    companion_info = get_companion()
+    if companion_info:
+        companion_type, comp_x, comp_y = companion_info
+        move_to(comp_x, comp_y)
+        if can_harvest() and get_entity_type() != Entities.Sunflower: # Don't harvest sunflowers here
+            harvest()  # Harvest if there's something at the companion location
+
+            quick_print("Planting companion plant ", companion_type, " at ", comp_x, ", ", comp_y)
+    
+            # debugging - slow the speed down to see what's happening
+            # set_execution_speed(0.5)
+
+            # Plant the companion plant
+            plant_based_on_entity(companion_type, (comp_x, comp_y))
+
+        move_to(position[0], position[1]) # Return to original position
+
+    # debugging - speed up the execution back to normal
+    # set_execution_speed(0)
+
 # Planting functions
 def do_planting(position):
     # Move to the specified position
@@ -124,9 +158,9 @@ def do_planting(position):
     carrot_count = num_items(Items.Carrot)
     pumpkin_count = num_items(Items.Pumpkin)
     power_count = num_items(Items.Power)
-    cactus_count = num_items(Items.Cactus)
+    # cactus_count = num_items(Items.Cactus)
 
-    min_count = min(wood_count, hay_count, carrot_count, pumpkin_count, power_count, cactus_count)
+    min_count = min(wood_count, hay_count, carrot_count, pumpkin_count, power_count)
     if min_count == wood_count:
         plant_tree_or_bush()
     elif min_count == hay_count:
@@ -137,8 +171,8 @@ def do_planting(position):
         plant_pumpkin()
     elif min_count == power_count:
         plant_sunflower()
-    elif min_count == cactus_count:
-        plant_cactus(position)
+    # elif min_count == cactus_count:
+        # plant_cactus(position)
 
 def plant_based_on_priority(item, position):
     if item == Items.Wood:
@@ -149,10 +183,18 @@ def plant_based_on_priority(item, position):
         plant_carrot()
     elif item == Items.Pumpkin:
         plant_pumpkin()
-    elif item == Items.Cactus:
-        plant_cactus(position)
+    # elif item == Items.Cactus:
+    #     plant_cactus(position)
     elif item == Items.Power:
         plant_sunflower()
+
+def plant_based_on_entity(entity, position):
+    if entity == Entities.Tree or entity == Entities.Bush:
+        plant_tree_or_bush()
+    elif entity == Entities.Grass:
+        plant_grass()
+    elif entity == Entities.Carrots:
+        plant_carrot()
 
 def plant_tree_or_bush():
     if can_plant_tree():
